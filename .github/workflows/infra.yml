@@ -1,0 +1,123 @@
+name: Terraform Deploy or Destroy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+    inputs:
+      customer:
+        description: 'Customer name (e.g., customer1)'
+        required: true
+        type: string
+
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
+
+      confirm_destroy_prod:
+        description: 'Type "CONFIRM" to destroy PROD environment (case-sensitive)'
+        required: false
+        default: ''
+
+env:
+  AWS_REGION: us-west-2  # default region
+
+jobs:
+  terraform:
+    name: Terraform ${{ inputs.action }} on ${{ inputs.customer }} / ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    # Prevent destroy on prod without confirmation
+    if: inputs.action != 'destroy' || (inputs.environment != 'prod' || inputs.confirm_destroy_prod == 'CONFIRM')
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Set AWS Credentials by Environment
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets['AWS_ACCESS_KEY_ID_' + inputs.environment.toUpperCase()] }}
+          aws-secret-access-key: ${{ secrets['AWS_SECRET_ACCESS_KEY_' + inputs.environment.toUpperCase()] }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Format Check
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: terraform fmt -check
+
+      - name: Terraform Init
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: terraform init -input=false
+
+      - name: Select or Create Workspace
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: |
+          terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }}
+
+      - name: Terraform Validate
+        if: inputs.action == 'apply'
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: inputs.action == 'apply'
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: terraform apply -input=false -auto-approve tfplan
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        run: terraform destroy -auto-approve
+
+      - name: Notify Slack on Success
+        if: ${{ success() && github.event.inputs.environment && github.event.inputs.customer }}
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          fields: repo,message,commit,author
+          custom_payload: |
+            {
+              "text": ":tada: Terraform *${{ inputs.action }}* succeeded for *${{ inputs.customer }}* in *${{ inputs.environment }}* environment."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          fields: repo,message,commit,author
+          custom_payload: |
+            {
+              "text": ":warning: Terraform *${{ inputs.action }}* failed for *${{ inputs.customer }}* in *${{ inputs.environment }}* environment."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
