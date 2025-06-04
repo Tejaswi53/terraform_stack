@@ -1,5 +1,11 @@
 name: Terraform Deploy or Destroy
 
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
   workflow_dispatch:
     inputs:
       customer:
@@ -39,7 +45,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.10.3
+          terraform_version: 1.6.6
 
       - name: Terraform Format Check
         working-directory: stacks/${{ inputs.customer }}
