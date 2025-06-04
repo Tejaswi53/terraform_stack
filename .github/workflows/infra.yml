@@ -57,7 +57,7 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Format Check
-        working-directory: stacks/${{ inputs.customer }}/${{ inputs.environment }}
+        working-directory: stacks/${{ inputs.customer }}
         run: terraform fmt -check
 
       - name: Terraform Init
