@@ -21,8 +21,8 @@ on:
         required: true
         type: string
 
-      confirm_destroy_prod:
-        description: 'Type "CONFIRM" to destroy PROD environment (case-sensitive)'
+      confirm_destroy:
+        description: 'Type "CONFIRM" to allow destroy (case-sensitive)'
         required: false
         default: ''
 
@@ -33,10 +33,12 @@ jobs:
   terraform:
     name: Terraform ${{ inputs.action }} on ${{ inputs.customer }} / ${{ inputs.environment }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
 
-    # Prevent destroy in prod unless confirmed
-    if: ${{ inputs.action != 'destroy' || inputs.environment != 'prod' || inputs.confirm_destroy_prod == 'CONFIRM' }}
+    # 🔒 Apply environment only for `destroy` to trigger approval
+    environment: ${{ inputs.action == 'destroy' && inputs.environment || '' }}
+
+    # 🛑 Only allow destroy if confirmation is typed
+    if: ${{ inputs.action != 'destroy' || inputs.confirm_destroy == 'CONFIRM' }}
 
     steps:
       - name: Checkout repository
