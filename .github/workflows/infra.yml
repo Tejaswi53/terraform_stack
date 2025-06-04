@@ -1,11 +1,6 @@
 name: Terraform Deploy or Destroy
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
   workflow_dispatch:
     inputs:
       customer:
@@ -21,13 +16,18 @@ on:
           - apply
           - destroy
 
+      environment:
+        description: 'Environment (e.g., dev, prod)'
+        required: true
+        type: string
+
       confirm_destroy_prod:
         description: 'Type "CONFIRM" to destroy PROD environment (case-sensitive)'
         required: false
         default: ''
 
 env:
-  AWS_REGION: us-west-2  # default region
+  AWS_REGION: us-west-2
 
 jobs:
   terraform:
@@ -35,42 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
-    # Prevent destroy on prod without confirmation
-    if: inputs.action != 'destroy' || (inputs.environment != 'prod' || inputs.confirm_destroy_prod == 'CONFIRM')
+    # Only allow destroy in prod if explicitly confirmed
+    if: ${{ inputs.action != 'destroy' || inputs.environment != 'prod' || inputs.confirm_destroy_prod == 'CONFIRM' }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.6
-
-      - name: Terraform Format Check
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform fmt -check
-
-      - name: Terraform Init
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform init -input=false
-
-      - name: Terraform Validate
-        if: inputs.action == 'apply'
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform validate
-
-      - name: Terraform Plan
-        if: inputs.action == 'apply'
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform plan -input=false -out=tfplan
-
-      - name: Terraform Apply
-        if: inputs.action == 'apply'
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform apply -input=false -auto-approve tfplan
-
-      - name: Terraform Destroy
-        if: inputs.action == 'destroy'
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform destroy -auto-approve
+      - na
