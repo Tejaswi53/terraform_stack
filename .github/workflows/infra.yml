@@ -13,15 +13,6 @@ on:
         required: true
         type: string
 
-      environment:
-        description: 'Environment'
-        required: true
-        type: choice
-        options:
-          - dev
-          - stage
-          - prod
-
       action:
         description: 'Action to perform'
         required: true
