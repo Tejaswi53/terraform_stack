@@ -9,8 +9,8 @@ variable "tenancy" {
 }
 
 variable "Name" {
-  default = "jpmrg"
-
+    default = "kaiser"
+  
 }
 
 variable "region" {
