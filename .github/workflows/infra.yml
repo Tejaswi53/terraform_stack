@@ -1,6 +1,8 @@
 name: Terraform Deploy or Destroy
 
 on:
+  pull_request:
+    branches: [ "stage" ]
   workflow_dispatch:
     inputs:
       customer:
