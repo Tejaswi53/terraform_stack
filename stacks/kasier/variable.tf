@@ -9,7 +9,7 @@ variable "tenancy" {
 }
 
 variable "Name" {
-    default = "kaiser"
+    default = "Kaiser"
   
 }
 
