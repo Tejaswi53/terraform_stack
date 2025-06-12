@@ -58,6 +58,11 @@ jobs:
         working-directory: stacks/${{ inputs.customer }}
         run: terraform fmt -check
 
+      - name: Terraform lint Check
+        if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
+        working-directory: stacks/${{ inputs.customer }}
+        run: terraform lint  
+
       - name: Terraform Init
         working-directory: stacks/${{ inputs.customer }}
         run: |
