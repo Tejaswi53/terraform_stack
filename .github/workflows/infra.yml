@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # 🔒 Apply environment only for `destroy` to trigger approval
-    environment: ${{ inputs.action == 'destroy' && inputs.environment || '' }}
+    environment: ${{ inputs.action == 'apply' && 'dev' || (inputs.action == 'destroy' && inputs.environment || '') }}
 
     # 🛑 Only allow destroy if confirmation is typed
     if: ${{ inputs.action != 'destroy' || inputs.confirm_destroy == 'CONFIRM' }}
