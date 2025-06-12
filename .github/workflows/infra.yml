@@ -57,7 +57,7 @@ jobs:
         working-directory: stacks/${{ inputs.customer }}
         run: |
                terraform init -input=false \
-               -backend-config="terraformbackup020625" \
+               -backend-config="bucket=terraformbackup020625" \
                -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
                -backend-config="region=us-east-1"
 
