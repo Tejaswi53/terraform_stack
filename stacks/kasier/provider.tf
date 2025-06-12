@@ -13,7 +13,7 @@ terraform {
 terraform {
   backend "s3" {
     bucket         = "terraformbackup020625"
-    key            = "kaiser/terraform.tfstate"
+    key            = var.environment
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "kaiser_statefile"

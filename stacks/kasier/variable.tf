@@ -35,7 +35,7 @@ variable "enable_dns_support" {
 }
 
 
-variable "Env" {
-  default = "dev"
+variable "environment" {
+  default = "kaiser/terraform.tfstate"
 
 }
