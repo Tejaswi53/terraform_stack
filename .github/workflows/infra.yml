@@ -1,8 +1,6 @@
 name: Terraform Deploy or Destroy
 
 on:
-  pull_request:
-    branches: [ "stage" ]
   workflow_dispatch:
     inputs:
       customer:
@@ -15,6 +13,7 @@ on:
         required: true
         type: choice
         options:
+          - plan
           - apply
           - destroy
 
@@ -28,8 +27,6 @@ on:
         required: false
         default: ''
 
-env:
-  AWS_REGION: us-west-2
 
 jobs:
   terraform:
@@ -49,7 +46,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.6
+          terraform_version: 1.11.0
 
       - name: Terraform Format Check
         working-directory: stacks/${{ inputs.customer }}
@@ -60,21 +57,21 @@ jobs:
         run: terraform init -input=false
 
       - name: Terraform Validate
-        if: ${{ inputs.action == 'apply' }}
+        if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
         working-directory: stacks/${{ inputs.customer }}
         run: terraform validate
 
-      - name: Terraform Plan
-        if: ${{ inputs.action == 'apply' }}
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform plan -input=false -out=tfplan
+      #- name: Terraform Plan
+       # if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
+        #working-directory: stacks/${{ inputs.customer }}
+        #run: terraform plan -input=false -out=tfplan -var-file=environment/${{ inputs.environment}}
 
-      - name: Terraform Apply
-        if: ${{ inputs.action == 'apply' }}
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform apply -input=false -auto-approve tfplan
+      #- name: Terraform Apply
+        #if: ${{ inputs.action == 'apply' }}
+       # working-directory: stacks/${{ inputs.customer }}
+        #run: terraform apply -input=false -auto-approve tfplan -var-file=environment/${{ inputs.environment}}
 
-      - name: Terraform Destroy
-        if: ${{ inputs.action == 'destroy' }}
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform destroy -auto-approve
+      #- name: Terraform Destroy
+        #if: ${{ inputs.action == 'destroy' }}
+        #working-directory: stacks/${{ inputs.customer }}
+       # run: terraform destroy -auto-approve
