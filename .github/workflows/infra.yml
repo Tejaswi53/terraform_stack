@@ -55,11 +55,16 @@ jobs:
 
       - name: Terraform Init
         working-directory: stacks/${{ inputs.customer }}
-        run: terraform init -input=false
+        run: |
+               terraform init -input=false \
+               -backend-config="terraformbackup020625" \
+               -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
+               -backend-config="region=us-east-1"
 
       - name: Terraform Validate
         if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
         working-directory: stacks/${{ inputs.customer }}
         run: terraform validate
+
 
   
