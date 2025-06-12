@@ -84,12 +84,12 @@ jobs:
       - name: Terraform Plan
         if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
         working-directory: stacks/${{ inputs.customer }}
-        run: terraform plan -input=false -out=tfplan -var-file="environment/${{ inputs.environment}}"
+        run: terraform plan -input=false -out=tfplan -var-file="environment/${{ inputs.environment}}.tfvars"
 
       - name: Terraform Apply
         if: ${{ inputs.action == 'apply' }}
         working-directory: stacks/${{ inputs.customer }}
-        run: terraform apply -input=false -auto-approve tfplan -var-file="environment/${{ inputs.environment}}"
+        run: terraform apply -input=false -auto-approve tfplan -var-file="environment/${{ inputs.environment}}.tfvars"
 
       - name: Terraform Destroy
         if: ${{ inputs.action == 'destroy' }}
