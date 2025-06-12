@@ -58,10 +58,12 @@ jobs:
         working-directory: stacks/${{ inputs.customer }}
         run: terraform fmt -check
 
-      - name: Terraform lint Check
-        if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
-        working-directory: stacks/${{ inputs.customer }}
-        run: terraform lint  
+      - uses: terraform-linters/setup-tflint@v4
+        name: Setup TFLint\
+        with:
+         tflint_version: v0.52.0
+      - name: Show version
+        run: tflint --version  
 
       - name: Terraform Init
         working-directory: stacks/${{ inputs.customer }}
