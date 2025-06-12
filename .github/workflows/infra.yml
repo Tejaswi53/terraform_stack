@@ -130,7 +130,16 @@ jobs:
             -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
             -backend-config="region=us-east-1"
 
-          terraform workspace select "${{ inputs.environment }}"
+      - name: Create or select workspace
+        working-directory: stacks/${{ inputs.customer }}
+        run: |
+          if terraform workspace list | grep -q "${{ inputs.environment }}"; then
+            terraform workspace select "${{ inputs.environment }}"
+          else
+            terraform workspace new "${{ inputs.environment }}"
+            terraform workspace select "${{ inputs.environment }}"
+          fi
+
 
       - name: Terraform Apply
         working-directory: stacks/${{ inputs.customer }}
