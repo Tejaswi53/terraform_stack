@@ -7,6 +7,11 @@ on:
         description: 'Customer name (e.g., customer1)'
         required: true
         type: string
+      
+      environment:
+        description: 'Environment like (dev, stage, prod)'
+        required: true
+        type: string    
 
       action:
         description: 'Action to perform'
