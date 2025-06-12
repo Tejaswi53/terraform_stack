@@ -17,11 +17,6 @@ on:
           - apply
           - destroy
 
-      environment:
-        description: 'Environment to deploy to (e.g., dev, staging, prod)'
-        required: true
-        type: string
-
       confirm_destroy:
         description: 'Type "CONFIRM" to allow destroy (case-sensitive)'
         required: false
@@ -61,17 +56,4 @@ jobs:
         working-directory: stacks/${{ inputs.customer }}
         run: terraform validate
 
-      #- name: Terraform Plan
-       # if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
-        #working-directory: stacks/${{ inputs.customer }}
-        #run: terraform plan -input=false -out=tfplan -var-file=environment/${{ inputs.environment}}
-
-      #- name: Terraform Apply
-        #if: ${{ inputs.action == 'apply' }}
-       # working-directory: stacks/${{ inputs.customer }}
-        #run: terraform apply -input=false -auto-approve tfplan -var-file=environment/${{ inputs.environment}}
-
-      #- name: Terraform Destroy
-        #if: ${{ inputs.action == 'destroy' }}
-        #working-directory: stacks/${{ inputs.customer }}
-       # run: terraform destroy -auto-approve
+  
