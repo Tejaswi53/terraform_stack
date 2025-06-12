@@ -27,11 +27,17 @@ on:
         required: false
         default: ''
 
+
 jobs:
-  terraform-plan:
-    name: Terraform Plan
+  terraform:
+    name: Terraform ${{ inputs.action }} on ${{ inputs.customer }} / ${{ inputs.environment }}
     runs-on: ubuntu-latest
-    if: ${{ inputs.action == 'plan' || inputs.action == 'apply' }}
+
+    # 🔒 Apply environment only for `destroy` to trigger approval
+    environment: ${{ inputs.action == 'destroy' && inputs.environment || '' }}
+
+    # 🛑 Only allow destroy if confirmation is typed
+    if: ${{ inputs.action != 'destroy' || inputs.confirm_destroy == 'CONFIRM' }}
 
     steps:
       - name: Checkout repository
@@ -41,131 +47,55 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.10.3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         aws-region: us-east-1    
 
       - name: Terraform Format Check
         working-directory: stacks/${{ inputs.customer }}
         run: terraform fmt -check
 
-      - uses: terraform-linters/setup-tflint@v4
-        name: Setup TFLint
-        with:
-          tflint_version: v0.52.0
-
-      - name: Show TFLint Version
-        run: tflint --version
-
       - name: Terraform Init
         working-directory: stacks/${{ inputs.customer }}
         run: |
-          terraform init -input=false \
-            -backend-config="bucket=terraformbackup020625" \
-            -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
-            -backend-config="region=us-east-1"
+               terraform init -input=false \
+               -backend-config="bucket=terraformbackup020625" \
+               -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
+               -backend-config="region=us-east-1"
 
       - name: Terraform Validate
+        if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
         working-directory: stacks/${{ inputs.customer }}
         run: terraform validate
 
       - name: Create or select workspace
         working-directory: stacks/${{ inputs.customer }}
         run: |
-          terraform workspace select "${{ inputs.environment }}" || terraform workspace new "${{ inputs.environment }}"
+          if terraform workspace list | grep -q "${{ inputs.environment }}"; then
+             terraform workspace select "${{ inputs.environment }}"
+           else
+              terraform workspace new "${{ inputs.environment }}"
+              terraform workspace select "${{ inputs.environment }}"
+          fi
 
       - name: Terraform Plan
+        if: ${{ inputs.action == 'apply' || inputs.action == 'plan' }}
         working-directory: stacks/${{ inputs.customer }}
-        run: terraform plan -input=false -out=tfplan -var-file="environments/${{ inputs.environment }}.tfvars"
-
-      - name: Upload tfplan Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan
-          path: stacks/${{ inputs.customer }}/tfplan
-
-  terraform-apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    needs: terraform-plan
-    if: ${{ inputs.action == 'apply' }}
-    environment: dev  # Optional: add approval if needed via GitHub Environments
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.10.3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Download tfplan Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan
-          path: stacks/${{ inputs.customer }}
-
-      - name: Terraform Init
-        working-directory: stacks/${{ inputs.customer }}
-        run: |
-          terraform init -input=false \
-            -backend-config="bucket=terraformbackup020625" \
-            -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
-            -backend-config="region=us-east-1"
-
-      - name: Create or select workspace
-        working-directory: stacks/${{ inputs.customer }}
-        run: |
-          terraform workspace select "${{ inputs.environment }}" || terraform workspace new "${{ inputs.environment }}"
+        run: terraform plan -input=false -out=tfplan -var-file="environments/${{ inputs.environment}}.tfvars"
 
       - name: Terraform Apply
+        if: ${{ inputs.action == 'apply' }}
         working-directory: stacks/${{ inputs.customer }}
-        run: terraform apply -input=false -auto-approve tfplan
-
-  terraform-destroy:
-    name: Terraform Destroy
-    runs-on: ubuntu-latest
-    if: ${{ inputs.action == 'destroy' && inputs.confirm_destroy == 'CONFIRM' }}
-    environment: ${{ inputs.environment }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.10.3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Terraform Init & Workspace
-        working-directory: stacks/${{ inputs.customer }}
-        run: |
-          terraform init -input=false \
-            -backend-config="bucket=terraformbackup020625" \
-            -backend-config="key=${{ inputs.customer }}/${{ inputs.environment }}/terraform.tfstate" \
-            -backend-config="region=us-east-1"
-
-          terraform workspace select "${{ inputs.environment }}" || terraform workspace new "${{ inputs.environment }}"
+        run: terraform apply -input=false -auto-approve tfplan -var-file="environments/${{ inputs.environment}}.tfvars"
 
       - name: Terraform Destroy
+        if: ${{ inputs.action == 'destroy' }}
         working-directory: stacks/${{ inputs.customer }}
-        run: terraform destroy -auto-approve
+        run: terraform destroy -auto-approve    
+      
+
+
+  
