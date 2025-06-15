@@ -37,6 +37,15 @@ pipeline {
             }
         }
 
+        stage('aws login') {
+            steps {
+                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'riaws1', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                 // some block
+                 
+                }
+            }
+        }
+
         stage('terraform init') {
             steps {
                 sh '''
