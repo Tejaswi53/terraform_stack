@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     parameters { 
-        string(name: 'Customer', defaultValue: 'kaiser', description: 'Enter the customer name')
-        choice(name: 'ACTIONS', choices: ['validate', 'plan', 'apply', 'destroy'], description: 'Select one choice to perform terraform action')
+        string(name: 'Customer', defaultValue: 'kasier', description: 'Enter the customer name')
+        choice(name: 'ACTIONS', choices: ['plan', 'apply'], description: 'Select one choice to perform terraform action')
         choice(name: 'ENV', choices: ['dev', 'stage', 'prod'], description: 'select the environment')
         
     }
@@ -41,7 +41,7 @@ pipeline {
             steps {
                 withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'riaws1', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                  // some block
-                 
+
                 }
             }
         }
