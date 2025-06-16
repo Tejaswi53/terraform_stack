@@ -33,7 +33,7 @@ pipeline {
             steps {
                 sh """
                   cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  terraform init -inut=false
+                  terraform init -input=false
                 """
             }
         }
