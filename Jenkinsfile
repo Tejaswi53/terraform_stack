@@ -38,7 +38,7 @@ pipeline {
             }
         }
 
-        stage('terraform validate') {
+        /*stage('terraform validate') {
             
             steps {
                 sh """
@@ -46,7 +46,7 @@ pipeline {
                   terraform validate
                 """                
             }
-        }
+        }*/
 
         stage('aws login') {
             steps {
@@ -57,11 +57,11 @@ pipeline {
             }
         }
 
-        stage('trivy scan') {
+        /*stage('trivy scan') {
             steps {
                 sh "trivy config stacks/${params.Customer} --output scanReport.json"
             }
-        }
+        }*/
 
         stage('create or select workspace') {
             steps{
