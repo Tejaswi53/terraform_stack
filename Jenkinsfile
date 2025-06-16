@@ -24,7 +24,7 @@ pipeline {
                   echo "${env.WORKSPACE}"
 
                   cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  sudo terraform fmt -check
+                  terraform fmt -check
                 """
             }
         }
