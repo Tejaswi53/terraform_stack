@@ -30,12 +30,10 @@ pipeline {
         }
 
         stage('terraform validate') {
-            when {
-                expression { ${params.ACTIONS} == /(plan|apply)/ }
-            }
+            
             steps {
                 sh """
-                  cd stacks/${params.Customer}
+                  cd ${env.WORKSPACE}/stacks/${params.Customer}
                   terraform validate
                 """                
             }
