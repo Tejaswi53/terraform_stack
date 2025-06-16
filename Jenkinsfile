@@ -1,11 +1,10 @@
 pipeline {
     agent any
-    
+
     parameters { 
         string(name: 'Customer', defaultValue: 'kasier', description: 'Enter the customer name')
         choice(name: 'ACTIONS', choices: ['plan', 'apply'], description: 'Select one choice to perform terraform action')
-        choice(name: 'ENV', choices: ['dev', 'stage', 'prod'], description: 'select the environment')
-        
+        choice(name: 'ENV', choices: ['dev', 'stage', 'prod'], description: 'Select the environment')
     }
 
     environment {
@@ -14,95 +13,93 @@ pipeline {
 
     stages {
 
-        stage('git checkout') {
+        stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/Tejaswi53/terraform_stack.git'
             }
         }
 
-        stage('terraform format') {
+        stage('Terraform Format') {
             steps {
                 sh """
-                  pwd
-                  ls -l
-                  echo "${env.WORKSPACE}"
-
-                  cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  terraform fmt -check
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    terraform fmt -check
                 """
             }
         }
 
-        stage('terraform init') {
+        stage('Terraform Init') {
             steps {
                 sh """
-                  cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  sudo terraform init -input=false
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    terraform init -input=false
                 """
             }
         }
 
-        stage('terraform validate') {
-            
+        stage('Terraform Validate') {
             steps {
                 sh """
-                  cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  sudo terraform validate
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    terraform validate
                 """                
             }
         }
 
-
-        /*stage('trivy scan') {
+        stage('Create or Select Workspace') {
             steps {
-                sh "trivy config stacks/${params.Customer} --output scanReport.json"
-            }
-        }*/
-
-        stage('create or select workspace') {
-            steps{
                 sh """
-                cd ${env.WORKSPACE}/stacks/${params.Customer}
-                if sudo terraform workspace list | grep -q "${params.ENV}"; then
-                   sudo terraform workspace select "${params.ENV}"
-                else
-                   sudo terraform workspace new "${params.ENV}"
-                   sudo terraform workspace select "${params.ENV}"
-                fi
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    if terraform workspace list | grep -q "${params.ENV}"; then
+                        terraform workspace select "${params.ENV}"
+                    else
+                        terraform workspace new "${params.ENV}"
+                    fi
                 """
             }
         }
 
-        stage('terraform plan') {
+        stage('Terraform Plan') {
             when {
-                expression { env.ACTION == 'plan' }
+                expression { env.ACTION == 'plan' || env.ACTION == 'apply' }
             }
             steps {
                 sh """
-                  pwd
-                  ls -l
-                  cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  sudo terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
-                """               
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
+                """
             }
         }
 
-      stage('Show Terraform Plan') {
-         steps {
-            dir('stacks/kasier') {
-            sh 'terraform show -no-color tfplan'
-        }
-    }
-}
-
-        stage('terraform apply') {
+        stage('Show Terraform Plan') {
             when {
-                expression { ${params.ACTIONS} == /(apply)/ }
+                expression { env.ACTION == 'plan' || env.ACTION == 'apply' }
             }
             steps {
                 sh """
-                  cd ${env.WORKSPACE}/stacks/${params.Customer}
-                  sudo terraform apply -input=false -auto-approve tfplan -var-file="environments/${params.ENV}.tfvars"
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    terraform show -no-color tfplan
+                """
+            }
+        }
+
+        stage('Manual Approval') {
+            when {
+                expression { env.ACTION == 'apply' }
+            }
+            steps {
+                input message: "Do you want to proceed with 'terraform apply' for ${params.Customer} in ${params.ENV}?"
+            }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                expression { env.ACTION == 'apply' }
+            }
+            steps {
+                sh """
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    terraform apply -input=false tfplan
                 """
             }               
         }
