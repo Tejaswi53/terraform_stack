@@ -21,6 +21,8 @@ pipeline {
                 sh '''
                   pwd
                   ls -l
+                  echo "${env.WORKSPACE}"
+
                   cd ${env.WORKSPACE}/stacks/${params.Customer}
                   terraform fmt -check
                 '''
