@@ -9,7 +9,7 @@ pipeline {
     }
 
     environment {
-        ACTION = ${params.ACTIONS}
+        ACTION = "${params.ACTIONS}"
     }
 
     stages {
