@@ -34,10 +34,10 @@ pipeline {
                 expression { ${params.ACTIONS} == /(plan|apply)/ }
             }
             steps {
-                sh '''
+                sh """
                   cd stacks/${params.Customer}
                   terraform validate
-                '''                
+                """                
             }
         }
 
@@ -52,22 +52,22 @@ pipeline {
 
         stage('terraform init') {
             steps {
-                sh '''
+                sh """
                   cd stacks/${params.Customer}
                   terraform init -inut=false
-                '''
+                """
             }
         }
 
         stage('trivy scan') {
             steps {
-                sh 'trivy config stacks/${params.Customer} --output scanReport.json'
+                sh "trivy config stacks/${params.Customer} --output scanReport.json"
             }
         }
 
         stage('create or select workspace') {
             steps{
-                sh '''
+                sh """
                 cd stacks/${params.Customer}
                 if terraform workspace list | grep -q "${params.ENV}"; then
                    terraform workspace select "${params.ENV}"
@@ -75,7 +75,7 @@ pipeline {
                    terraform workspace new "${params.ENV}"
                    terraform workspace select "${params.ENV}"
                 fi
-                '''
+                """
             }
         }
 
@@ -84,10 +84,10 @@ pipeline {
                 expression { ${params.ACTIONS} == /(plan|apply)/ }
             }
             steps {
-                sh '''
+                sh """
                   cd stacks/${params.Customer}
                   terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
-                '''                
+                """               
             }
         }
 
@@ -96,12 +96,11 @@ pipeline {
                 expression { ${params.ACTIONS} == /(apply)/ }
             }
             steps {
-                sh '''
+                sh """
                   cd stacks/${params.Customer}
                   terraform apply -input=false -auto-approve tfplan -var-file="environments/${params.ENV}.tfvars"
-                ''' 
+                """
             }               
         }
-
     }
 }
