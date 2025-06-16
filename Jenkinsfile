@@ -66,7 +66,7 @@ pipeline {
         stage('create or select workspace') {
             steps{
                 sh """
-                cd stacks/${params.Customer}
+                cd ${env.WORKSPACE}/stacks/${params.Customer}
                 if sudo terraform workspace list | grep -q "${params.ENV}"; then
                    sudo terraform workspace select "${params.ENV}"
                 else
@@ -83,7 +83,7 @@ pipeline {
             }
             steps {
                 sh """
-                  cd stacks/${params.Customer}
+                  cd ${env.WORKSPACE}/stacks/${params.Customer}
                   sudo terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
                 """               
             }
@@ -95,7 +95,7 @@ pipeline {
             }
             steps {
                 sh """
-                  cd stacks/${params.Customer}
+                  cd ${env.WORKSPACE}/stacks/${params.Customer}
                   sudo terraform apply -input=false -auto-approve tfplan -var-file="environments/${params.ENV}.tfvars"
                 """
             }               
