@@ -79,10 +79,12 @@ pipeline {
 
         stage('terraform plan') {
             when {
-                expression { ${params.ACTIONS} == /(plan|apply)/ }
+                expression { ${params.ACTIONS} == plan }
             }
             steps {
                 sh """
+                  pwd
+                  ls -l
                   cd ${env.WORKSPACE}/stacks/${params.Customer}
                   sudo terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
                 """               
