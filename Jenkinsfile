@@ -23,7 +23,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    terraform fmt -check
+                     sudo terraform fmt -check
                 """
             }
         }
@@ -32,7 +32,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    terraform init -input=false
+                    sudo terraform init -input=false
                 """
             }
         }
@@ -41,7 +41,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    terraform validate
+                    sudo terraform validate
                 """                
             }
         }
@@ -51,9 +51,9 @@ pipeline {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
                     if terraform workspace list | grep -q "${params.ENV}"; then
-                        terraform workspace select "${params.ENV}"
+                        sudo terraform workspace select "${params.ENV}"
                     else
-                        terraform workspace new "${params.ENV}"
+                        sudo terraform workspace new "${params.ENV}"
                     fi
                 """
             }
@@ -66,7 +66,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
+                    sudo terraform plan -input=false -out=tfplan -var-file="environments/${params.ENV}.tfvars"
                 """
             }
         }
@@ -78,7 +78,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    terraform show -no-color tfplan
+                    sudo terraform show -no-color tfplan
                 """
             }
         }
@@ -99,7 +99,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    terraform apply -input=false tfplan
+                    sudo terraform apply -input=false tfplan
                 """
             }               
         }
