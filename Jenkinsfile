@@ -54,8 +54,10 @@ pipeline {
 
         stage('aws login') {
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'riaws1', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                 // some block
+               withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'awscred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+
+                   echo "aws login succssfully"
+    
 
                 }
             }
