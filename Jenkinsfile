@@ -42,7 +42,7 @@ pipeline {
             }
         }
 
-        /*stage('terraform validate') {
+        stage('terraform validate') {
             
             steps {
                 sh """
@@ -50,18 +50,8 @@ pipeline {
                   sudo terraform validate
                 """                
             }
-        }*/
-
-        stage('aws login') {
-            steps {
-               withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'awscred', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-
-                   echo "aws login succssfully"
-    
-
-                }
-            }
         }
+
 
         /*stage('trivy scan') {
             steps {
@@ -96,6 +86,14 @@ pipeline {
                 """               
             }
         }
+
+      stage('Show Terraform Plan') {
+         steps {
+            dir('stacks/kasier') {
+            sh 'terraform show -no-color tfplan'
+        }
+    }
+}
 
         stage('terraform apply') {
             when {
