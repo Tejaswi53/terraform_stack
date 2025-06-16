@@ -3,7 +3,7 @@ pipeline {
 
     parameters { 
         string(name: 'Customer', defaultValue: 'kasier', description: 'Enter the customer name')
-        choice(name: 'ACTIONS', choices: ['plan', 'apply'], description: 'Select one choice to perform terraform action')
+        choice(name: 'ACTIONS', choices: ['plan', 'apply', 'destroy'], description: 'Select one choice to perform terraform action')
         choice(name: 'ENV', choices: ['dev', 'stage', 'prod'], description: 'Select the environment')
     }
 
@@ -23,7 +23,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                     sudo terraform fmt -check
+                    sudo terraform fmt -check
                 """
             }
         }
@@ -83,7 +83,7 @@ pipeline {
             }
         }
 
-        stage('Manual Approval') {
+        stage('Manual Approval - Apply') {
             when {
                 expression { env.ACTION == 'apply' }
             }
@@ -102,6 +102,27 @@ pipeline {
                     sudo terraform apply -input=false tfplan
                 """
             }               
+        }
+
+        stage('Manual Approval - Destroy') {
+            when {
+                expression { env.ACTION == 'destroy' }
+            }
+            steps {
+                input message: "Are you sure you want to 'terraform destroy' for ${params.Customer} in ${params.ENV}?"
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression { env.ACTION == 'destroy' }
+            }
+            steps {
+                sh """
+                    cd ${env.WORKSPACE}/stacks/${params.Customer}
+                    sudo terraform destroy -auto-approve -var-file="environments/${params.ENV}.tfvars"
+                """
+            }
         }
     }
 }
