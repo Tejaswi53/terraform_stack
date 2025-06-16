@@ -120,7 +120,8 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    sudo terraform destroy -auto-approve -var-file="environments/${params.ENV}.tfvars"
+                    sudo terraform workspace select "${params.ENV}"
+                    sudo terraform destroy -auto-approve 
                 """
             }
         }
