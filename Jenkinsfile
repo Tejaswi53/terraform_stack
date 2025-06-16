@@ -8,6 +8,10 @@ pipeline {
         
     }
 
+    environments {
+        ACTION = ${params.ACTIONS}
+    }
+
     stages {
 
         stage('git checkout') {
@@ -79,7 +83,7 @@ pipeline {
 
         stage('terraform plan') {
             when {
-                expression { ${params.ACTIONS} == plan }
+                expression { ${ACTIONS} == plan }
             }
             steps {
                 sh """
