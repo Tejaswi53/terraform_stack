@@ -29,6 +29,15 @@ pipeline {
             }
         }
 
+        stage('terraform init') {
+            steps {
+                sh """
+                  cd ${env.WORKSPACE}/stacks/${params.Customer}
+                  terraform init -inut=false
+                """
+            }
+        }
+
         stage('terraform validate') {
             
             steps {
@@ -45,15 +54,6 @@ pipeline {
                  // some block
 
                 }
-            }
-        }
-
-        stage('terraform init') {
-            steps {
-                sh """
-                  cd stacks/${params.Customer}
-                  terraform init -inut=false
-                """
             }
         }
 
