@@ -19,6 +19,8 @@ pipeline {
         stage('terraform format') {
             steps {
                 sh '''
+                  pwd
+                  ls -l
                   cd ${env.WORKSPACE}/stacks/${params.Customer}
                   terraform fmt -check
                 '''
