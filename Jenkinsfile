@@ -83,7 +83,7 @@ pipeline {
 
         stage('terraform plan') {
             when {
-                expression { ${ACTIONS} == plan }
+                expression { env.ACTIONS == 'plan' }
             }
             steps {
                 sh """
