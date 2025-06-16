@@ -8,7 +8,7 @@ pipeline {
         
     }
 
-    environments {
+    environment {
         ACTION = ${params.ACTIONS}
     }
 
