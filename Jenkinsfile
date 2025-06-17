@@ -28,6 +28,14 @@ pipeline {
             }
         }
 
+        stage('trivy scan') {
+            steps {
+                sh """
+                  trivy config ${env.WORKSPACE}/stacks/${params.Customer} --output trivyScanReport.json
+                """
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 sh """
@@ -54,6 +62,7 @@ pipeline {
                         sudo terraform workspace select "${params.ENV}"
                     else
                         sudo terraform workspace new "${params.ENV}"
+                        sudo terraform workspace select "${params.ENV}"
                     fi
                 """
             }
@@ -78,7 +87,7 @@ pipeline {
             steps {
                 sh """
                     cd ${env.WORKSPACE}/stacks/${params.Customer}
-                    sudo terraform show -no-color tfplan
+                    sudo terraform show tfplan
                 """
             }
         }
