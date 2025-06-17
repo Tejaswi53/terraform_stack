@@ -24,7 +24,7 @@ on:
       action:
         description: 'select which action to perform'
         required: true
-        type: string
+        type: choice
         default: plan
         options:
           - plan
