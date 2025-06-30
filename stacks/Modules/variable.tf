@@ -11,8 +11,8 @@ variable "tenancy" {
 }
 
 variable "create_vpc" {
-  type        = list(string)
-  default     = []
+  type        = bool
+  default     = true
 }
 
 variable "enable_dns_hostnames" {
