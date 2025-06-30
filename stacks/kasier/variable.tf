@@ -18,8 +18,8 @@ variable "region" {
 
 }
 variable "create_vpc" {
-type        = list(string)
-default     = []
+  type        = list(string)
+  default     = []
 }
 variable "enable_dns_hostnames" {
   type    = bool
