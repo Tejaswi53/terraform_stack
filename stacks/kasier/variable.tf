@@ -17,10 +17,12 @@ variable "region" {
   default = "us-east-1"
 
 }
+
 variable "create_vpc" {
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
+
 variable "enable_dns_hostnames" {
   type    = bool
   default = true
@@ -40,5 +42,6 @@ variable "environment" {
 }
 
 variable "public_subnets_cidr" {
-  default = true
+  type    = list(string)
+  default = ["11.0.1.0/24", "11.0.2.0/24"]
 }
