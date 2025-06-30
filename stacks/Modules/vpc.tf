@@ -13,7 +13,7 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_subnet" "public-subnet" {
-  vpc_id            = module.vpc_id
+  vpc_id            = aws_vpc.vpc.id
   for_each          = toset(var.public_subnets_cidr)
   cidr_block        = each.key
   availability_zone = element(["us-east-1a", "us-east-1b"], index(var.public_subnets_cidr, each.key))
