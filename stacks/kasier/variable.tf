@@ -39,3 +39,7 @@ variable "environment" {
   default = "kaiser/terraform.tfstate"
 
 }
+
+variable "public_subnets_cidr" {
+  default = true
+}

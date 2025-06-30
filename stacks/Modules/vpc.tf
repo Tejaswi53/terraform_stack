@@ -1,15 +1,26 @@
 resource "aws_vpc" "vpc" {
-   count = var.create_vpc ? 1 : 0   
-   cidr_block = var.cidr
-   instance_tenancy = var.tenancy
-   enable_dns_hostnames = var.enable_dns_hostnames
-   enable_dns_support   = var.enable_dns_support
-  
+  count                = var.create_vpc ? 1 : 0
+  cidr_block           = var.cidr
+  instance_tenancy     = var.tenancy
+  enable_dns_hostnames = var.enable_dns_hostnames
+  enable_dns_support   = var.enable_dns_support
 
-   tags = {
-     Name = var.Name
-   }
-  
+
+  tags = {
+    Name = var.Name
+  }
+
+}
+
+resource "aws_subnet" "public-subnet" {
+  vpc_id            = module.vpc.vpc_id
+  for_each          = toset(var.public_subnets_cidr)
+  cidr_block        = each.key
+  availability_zone = element(["us-east-1a", "us-east-1b"], index(var.public_subnets_cidr, each.key))
+
+  tags = {
+    Name = "public-subnet-${index(var.public_subnets_cidr, each.key) + 1}"
+  }
 }
 
 
