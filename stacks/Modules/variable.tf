@@ -11,8 +11,8 @@ variable "tenancy" {
 }
 
 variable "create_vpc" {
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "enable_dns_hostnames" {
@@ -32,4 +32,8 @@ variable "key" {
 
 variable "public_subnets_cidr" {
   default = ["10.0.32.0/20", "10.0.48.0/20"]
+}
+
+variable "private_subnets_cidr" {
+  default = ["10.0.64.0/20", "10.0.80.0/20"]
 }
