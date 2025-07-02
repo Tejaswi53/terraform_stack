@@ -37,12 +37,12 @@ resource "aws_route_table" "public-rt" {
 }
 
 resource "aws_route_table_association" "public-rta" {
-  subnet_id      = aws_subnet.public-subnet[count.index].id
+  subnet_id      = aws_subnet.public-subnet[0].id
   route_table_id = aws_route_table.public-rt.id
 }
 
 resource "aws_nat_gateway" "ngw" {
-  subnet_id = aws_subnet.public-subnet[count.index].id
+  subnet_id = aws_subnet.public-subnet[0].id
 }
 
 resource "aws_subnet" "private-subnet" {
