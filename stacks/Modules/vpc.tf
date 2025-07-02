@@ -24,4 +24,32 @@ resource "aws_subnet" "public-subnet" {
   }
 }
 
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc[0].id
+}
+
+resource "aws_route_table" "public-rt" {
+  vpc_id = aws_vpc.vpc[0].id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw
+  }
+}
+
+resource "aws_route_table_association" "public-rta" {
+  subnet_id      = aws_subnet.public-subnet.id
+  route_table_id = aws_route_table.public-rt.id
+}
+
+resource "aws_nat_gateway" "ngw" {
+  subnet_id = aws_subnet.public-subnet.id
+}
+
+resource "aws_subnet" "private-subnet" {
+  for_each          = var.create_vpc ? { for idx, cidr in var.private_subnets_cidr : cidr => idx } : {}
+  vpc_id            = aws_vpc.vpc[0].id
+  cidr_block        = each.key
+  availability_zone = element(["us-east-1a", "us-east-1b"], index(var.private_subnets_cidr, each.key))
+}
+
 
