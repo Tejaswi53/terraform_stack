@@ -44,7 +44,7 @@ resource "aws_subnet" "private-subnet" {
 
 resource "aws_nat_gateway" "ngw" {
   count         = 1
-  subnet_id     = values(aws_subnet.public-subnet.id)[0].id
+  subnet_id     = values(aws_subnet.public-subnet)[0].id
   allocation_id = aws_eip.nat_ip.id
 }
 
