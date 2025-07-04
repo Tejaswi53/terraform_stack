@@ -41,7 +41,7 @@ resource "aws_subnet" "private-subnet" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  subnet_id = aws_subnet.public-subnet.public-subnet-1.id
+  subnet_id = aws_subnet.public-subnet[each.key].id
 }
 
 resource "aws_route_table" "private-rt" {
