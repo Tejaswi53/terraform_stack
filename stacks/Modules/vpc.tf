@@ -1,3 +1,4 @@
+
 resource "aws_vpc" "vpc" {
   count                = var.create_vpc ? 1 : 0
   cidr_block           = var.cidr
@@ -41,8 +42,8 @@ resource "aws_subnet" "private-subnet" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  for_each      = aws_subnet.public-subnet
-  subnet_id     = aws_subnet.public-subnet[each.key].id
+  count         = 1
+  subnet_id     = values(aws_subnet.public-subnet[0].id)
   allocation_id = aws_eip.nat_ip.id
 }
 
@@ -51,8 +52,8 @@ resource "aws_route_table" "private-rt" {
 
 
   route {
-    cidr_block = "0.0.0.0/0"
-
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.ngw[0].id
   }
 }
 
