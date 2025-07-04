@@ -41,8 +41,9 @@ resource "aws_subnet" "private-subnet" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  for_each  = aws_subnet.public-subnet
-  subnet_id = aws_subnet.public-subnet[each.key].id
+  for_each      = aws_subnet.public-subnet
+  subnet_id     = aws_subnet.public-subnet[each.key].id
+  allocation_id = aws_eip.nat_ip.id
 }
 
 resource "aws_route_table" "private-rt" {
@@ -59,6 +60,10 @@ resource "aws_route_table_association" "private-rta" {
   for_each       = aws_subnet.private-subnet
   subnet_id      = each.value.id
   route_table_id = aws_route_table.private-rt.id
+}
+
+resource "aws_eip" "nat_ip" {
+  domain = "vpc"
 }
 
 
