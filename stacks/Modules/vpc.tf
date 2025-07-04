@@ -46,11 +46,12 @@ resource "aws_nat_gateway" "ngw" {
 }
 
 resource "aws_route_table" "private-rt" {
-  vpc_id = aws_vpc.vpc[0].id
+  vpc_id   = aws_vpc.vpc[0].id
+  for_each = aws_nat_gateway.ngw
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_nat_gateway.ngw.id
+    gateway_id = aws_nat_gateway.ngw[each.key].id
   }
 }
 
