@@ -11,10 +11,11 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_subnet" "public-subnet" {
-  for_each          = var.create_vpc ? { for idx, cidr in var.public_subnets_cidr : cidr => idx } : {}
-  vpc_id            = aws_vpc.vpc[0].id
-  cidr_block        = each.key
-  availability_zone = element(["us-east-1a", "us-east-1b"], index(var.public_subnets_cidr, each.key))
+  for_each                = var.create_vpc ? { for idx, cidr in var.public_subnets_cidr : cidr => idx } : {}
+  vpc_id                  = aws_vpc.vpc[0].id
+  cidr_block              = each.key
+  availability_zone       = element(["us-east-1a", "us-east-1b"], index(var.public_subnets_cidr, each.key))
+  map_public_ip_on_launch = true
   tags = {
     Name = "public-subnet-${index(var.public_subnets_cidr, each.key) + 1}"
   }
