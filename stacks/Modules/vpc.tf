@@ -41,8 +41,22 @@ resource "aws_subnet" "private-subnet" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  for_each  = aws_subnet.public-subnet
-  subnet_id = each.value.id
+  subnet_id = aws_subnet.public-subnet[0].id
+}
+
+resource "aws_route_table" "private-rt" {
+  vpc_id = aws_vpc.vpc[0].id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.ngw.id
+  }
+}
+
+resource "aws_route_table_association" "private-rta" {
+  for_each       = aws_subnet.private-subnet
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private-rt.id
 }
 
 
